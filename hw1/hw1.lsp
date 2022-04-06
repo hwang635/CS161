@@ -50,3 +50,31 @@
       (list (SUB-LIST L 0 (/ (+ origLen 1) 2)) (SUB-LIST L (/ (+ origLen 1) 2) (/ (- origLen 1) 2)))) ; odd, first list is longer
     )
   )
+
+					; 6. BTREE-HEIGHT takes in a binary tree TREE and returns the height (length of longest path from node to end). The fx does that by recursively traversing through the left and right subtrees of each node and incrementing height each time until eventually returning the greater of the left or right heights, which is the tree height.
+
+(defun BTREE-HEIGHT (TREE)
+  (cond
+   ((null TREE) 0)
+   ((atom TREE) 0)
+   (t (let ((leftHeight (+ (BTREE-HEIGHT (car TREE)) 1)) ;++height
+	    (rightHeight (+ (BTREE-HEIGHT (cadr TREE)) 1)))
+	(if (> leftHeight rightHeight) ; return greater of left/right
+	    leftHeight
+	  rightHeight)
+	))
+   )
+  )
+
+					; 7. LIST2BTREE takes in a list of atoms LEAVES and returns a binary tree. The fx does this by using SPLIT-LIST and splitting every list into 2 sublists if it has more than 2 nodes, which recursively creates a binary tree.
+
+(defun LIST2BTREE (LEAVES)
+  (cond
+   ((null LEAVES) nil)
+   ((= (length LEAVES) 1) (car LEAVES)) ; return only 1 elem
+   ((= (length LEAVES) 2) LEAVES) ; 2 elem, return as list
+   (t (let ((splitList (SPLIT-LIST LEAVES))) ; get list w/ 2 half lists, recurse on each half list
+	(list (LIST2BTREE (car splitList))
+	      (LIST2BTREE (second splitList)))))
+   )
+  )
