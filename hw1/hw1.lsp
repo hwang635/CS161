@@ -78,3 +78,13 @@
 	      (LIST2BTREE (second splitList)))))
    )
   )
+
+					; 8. BTREE2LIST takes in a binary tree INPUT and returns a list of atoms with all of the tree elements in left to right order. The fx does this by recursing through the tree and appending the first element in the tree, then calling itself to add the first element of the rest of the tree until all elements have been added.
+
+(defun BTREE2LIST (TREE)
+  (cond
+   ((null TREE) nil)
+   ((atom TREE) (list TREE)) ; return single elem as list
+   (t (append (BTREE2LIST (car TREE)) (BTREE2LIST (second TREE)))) 
+   )
+  )
