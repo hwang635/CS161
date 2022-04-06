@@ -28,3 +28,25 @@
    (t (append (TREE-ORDER (first TREE)) (TREE-ORDER (third TREE)) (TREE-ORDER (second TREE))))
    )
   )
+
+					; 4. SUB-LIST takes in a list L, integers START and LEN, and returns a sublist taken from L that starts at START and has length LEN. The fx creates the sublist by decrementing START with each recursive call and getting the tail of the list until it reaches the start index, then it decrements LEN and adds onto the sublist until LEN = 0.
+
+(defun SUB-LIST (L START LEN)
+  (cond
+   ((null L) nil)
+   ((= LEN 0) nil)
+   ((> START 0) (SUB-LIST (cdr L) (- START 1) LEN)) ; decrement start and cut list
+   ((= START 0) (cons (car L) (SUB-LIST (cdr L) START (- LEN 1)))) ; add onto returned list and decrement len each time
+   (t nil)
+   )
+  )
+
+					; 5. SPLIT-LIST takes in list L and returns a combined list made of the 2 halves of L. The fx does that by finding the length of the list, calling SUB-LIST twice with start/length depending on whether the original list length is even or odd, and then returning the combination of the sub-lists.
+
+(defun SPLIT-LIST (L)
+  (let ((origLen (length L)))
+    (if (evenp origLen)
+	(list (SUB-LIST L 0 (/ origLen 2)) (SUB-LIST L (/ origLen 2) (/ origLen 2))) ; even, lists are same length
+      (list (SUB-LIST L 0 (/ (+ origLen 1) 2)) (SUB-LIST L (/ (+ origLen 1) 2) (/ (- origLen 1) 2)))) ; odd, first list is longer
+    )
+  )
