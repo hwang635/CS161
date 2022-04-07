@@ -1,3 +1,10 @@
+; Each function follows the same overall format. Almost every function is recursive and performs the required logic by splitting
+; the list argument into sections and recursing until reaching either the base case where the element is null, meaning there's no more
+; to split, or the list is 1 element, meaning some action can be performed on the single element and returned. In general, the
+; functions move forward/downward through the list using car, cdr, first, second, and third to separate the list until the list
+; is a format that can be worked on. There is a more specific description of what each function does in the commment directly above
+; each function.
+
 ; 1. TREE-CONTAINS takes in ordered tree TREE and number N, it checks if N is contained within TREE by recursively checking the left and right subtrees until it reaches base case where TREE is 1 element and that element is compared to N or the case where TREE is nil, meaning all elements in this subtree have been checked and not found to match N. The fx returns T if N is contained in TREE and NIL if N isn't in TREE.
 
 (defun TREE-CONTAINS (N TREE)
@@ -15,7 +22,7 @@
   (cond
    ((null TREE) nil)
    ((numberp TREE) TREE)
-   (t (TREE-MAX (caddr TREE)))
+   (t (TREE-MAX (caddr TREE))) ; third elem is the most right bc of ordered tree struct
    )
  )
 
@@ -24,7 +31,7 @@
 (defun TREE-ORDER (TREE)
   (cond
    ((null TREE) nil)
-   ((atom TREE) (list TREE)) ; last 1 elem, return as list
+   ((atom TREE) (list TREE)) ; last 1 elem, return as list to avoid dotted pair
    (t (append (TREE-ORDER (first TREE)) (TREE-ORDER (third TREE)) (TREE-ORDER (second TREE))))
    )
   )
@@ -95,6 +102,15 @@
     ((OR (null E1) (null E2)) nil); only 1 null, not the same
     ((AND (numberp E1) (numberp E2)) (= E1 E2)) ; both nums, check if equal
     ((AND (listp E1) (listp E2)) (AND (IS-SAME (car E1) (car E2)) (IS-SAME (cdr E1) (cdr E2)))) ; recursively check first elem + rest of list
-    (T nil) ; all other cases are false
+    (t nil) ; all other cases are false
+  )
+)
+
+; 10. FLATTEN-APPEND takes in 2 expressions E1, E2 and returns a combined list that has all of the atoms in E2 added onto E1 in order. The fx does this by recursing through E2 and adding it onto E1 when E2 is an atom or null, otherwise it calls itself with the first part of E2 to add the first part onto E1 and then adds the rest of E2 onto the returned list until all of E2 has been traversed through.
+(defun FLATTEN-APPEND (E1 E2)
+  (cond
+    ((null E2) E1) ; E2 done, return E1
+    ((atom E2) (append E1 (list E2))) ; single elem, directly add as list (otherwise dotted pair)
+    ((listp E2) (FLATTEN-APPEND (FLATTEN-APPEND E1 (car E2)) (cdr E2)))
   )
 )
