@@ -1,4 +1,4 @@
-					; 1. TREE-CONTAINS takes in ordered tree TREE and number N, it checks if N is contained within TREE by recursively checking the left and right subtrees until it reaches base case where TREE is 1 element and that element is compared to N or the case where TREE is nil, meaning all elements in this subtree have been checked and not found to match N. The fx returns T if N is contained in TREE and NIL if N isn't in TREE.
+; 1. TREE-CONTAINS takes in ordered tree TREE and number N, it checks if N is contained within TREE by recursively checking the left and right subtrees until it reaches base case where TREE is 1 element and that element is compared to N or the case where TREE is nil, meaning all elements in this subtree have been checked and not found to match N. The fx returns T if N is contained in TREE and NIL if N isn't in TREE.
 
 (defun TREE-CONTAINS (N TREE)
   (cond
@@ -9,7 +9,7 @@
    )
   )
 
-					; 2. TREE-MAX takes in an ordered TREE and returns the max number in TREE, which is the number furthest to the right in the tree list. The fx recursively gets the rightmost element and returns the last rightmost number.
+; 2. TREE-MAX takes in an ordered TREE and returns the max number in TREE, which is the number furthest to the right in the tree list. The fx recursively gets the rightmost element and returns the last rightmost number.
 
 (defun TREE-MAX (TREE)
   (cond
@@ -19,7 +19,7 @@
    )
  )
 
-					; 3. TREE-ORDER takes in ordered TREE and returns a post-ordered (left subtree, right subtree, root) traversed list of the numbers in TREE. It recursively goes through and appends to a list the left, right, and middle subtree.
+; 3. TREE-ORDER takes in ordered TREE and returns a post-ordered (left subtree, right subtree, root) traversed list of the numbers in TREE. It recursively goes through and appends to a list the left, right, and middle subtree.
 
 (defun TREE-ORDER (TREE)
   (cond
@@ -29,7 +29,7 @@
    )
   )
 
-					; 4. SUB-LIST takes in a list L, integers START and LEN, and returns a sublist taken from L that starts at START and has length LEN. The fx creates the sublist by decrementing START with each recursive call and getting the tail of the list until it reaches the start index, then it decrements LEN and adds onto the sublist until LEN = 0.
+; 4. SUB-LIST takes in a list L, integers START and LEN, and returns a sublist taken from L that starts at START and has length LEN. The fx creates the sublist by decrementing START with each recursive call and getting the tail of the list until it reaches the start index, then it decrements LEN and adds onto the sublist until LEN = 0.
 
 (defun SUB-LIST (L START LEN)
   (cond
@@ -41,7 +41,7 @@
    )
   )
 
-					; 5. SPLIT-LIST takes in list L and returns a combined list made of the 2 halves of L. The fx does that by finding the length of the list, calling SUB-LIST twice with start/length depending on whether the original list length is even or odd, and then returning the combination of the sub-lists.
+; 5. SPLIT-LIST takes in list L and returns a combined list made of the 2 halves of L. The fx does that by finding the length of the list, calling SUB-LIST twice with start/length depending on whether the original list length is even or odd, and then returning the combination of the sub-lists.
 
 (defun SPLIT-LIST (L)
   (let ((origLen (length L)))
@@ -51,7 +51,7 @@
     )
   )
 
-					; 6. BTREE-HEIGHT takes in a binary tree TREE and returns the height (length of longest path from node to end). The fx does that by recursively traversing through the left and right subtrees of each node and incrementing height each time until eventually returning the greater of the left or right heights, which is the tree height.
+; 6. BTREE-HEIGHT takes in a binary tree TREE and returns the height (length of longest path from node to end). The fx does that by recursively traversing through the left and right subtrees of each node and incrementing height each time until eventually returning the greater of the left or right heights, which is the tree height.
 
 (defun BTREE-HEIGHT (TREE)
   (cond
@@ -66,7 +66,7 @@
    )
   )
 
-					; 7. LIST2BTREE takes in a list of atoms LEAVES and returns a binary tree. The fx does this by using SPLIT-LIST and splitting every list into 2 sublists if it has more than 2 nodes, which recursively creates a binary tree.
+; 7. LIST2BTREE takes in a list of atoms LEAVES and returns a binary tree. The fx does this by using SPLIT-LIST and splitting every list into 2 sublists if it has more than 2 nodes, which recursively creates a binary tree.
 
 (defun LIST2BTREE (LEAVES)
   (cond
@@ -79,8 +79,7 @@
    )
   )
 
-					; 8. BTREE2LIST takes in a binary tree INPUT and returns a list of atoms with all of the tree elements in left to right order. The fx does this by recursing through the tree and appending the first element in the tree, then calling itself to add the first element of the rest of the tree until all elements have been added.
-
+; 8. BTREE2LIST takes in a binary tree INPUT and returns a list of atoms with all of the tree elements in left to right order. The fx does this by recursing through the tree and appending the first element in the tree, then calling itself to add the first element of the rest of the tree until all elements have been added.
 (defun BTREE2LIST (TREE)
   (cond
    ((null TREE) nil)
@@ -88,3 +87,14 @@
    (t (append (BTREE2LIST (car TREE)) (BTREE2LIST (second TREE)))) 
    )
   )
+
+; 9. IS-SAME takes in 2 LISP expressions E1, E2 and checks if they are the same. The fx does this by recursively getting each atom in the list, checking if the elements are atoms at the same time and if each atom is equal to its corresponding element in the other expression, and then calling itself with the rest of the list.
+(defun IS-SAME (E1 E2)
+  (cond
+    ((AND (null E1) (null E2)) t) ; both null, ok
+    ((OR (null E1) (null E2)) nil); only 1 null, not the same
+    ((AND (numberp E1) (numberp E2)) (= E1 E2)) ; both nums, check if equal
+    ((AND (listp E1) (listp E2)) (AND (IS-SAME (car E1) (car E2)) (IS-SAME (cdr E1) (cdr E2)))) ; recursively check first elem + rest of list
+    (T nil) ; all other cases are false
+  )
+)
