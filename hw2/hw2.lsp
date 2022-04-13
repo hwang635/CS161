@@ -9,7 +9,6 @@
 ; of child nodes so we separate the first element from the rest of the list, add it to the back
 ; of the "queue", do BFS on the manipulated list, and recursively continue until the tree has
 ; been traversed through.
-
 (defun BFS (TREE)
     (cond
         ((null TREE) nil) ; no more on this path, done
@@ -111,6 +110,68 @@
             ((AND (< newHereM newHereC) (> newHereM 0)) nil)
             (t (list (list (+ otherM m) (+ otherC c) otherSide)))
         )   
+    )
+)
+
+; SUCC-FN returns all of the possible legal successor states to the current
+; state. It takes a single argument (s), which encodes the current state, and
+; returns a list of each state that can be reached by applying legal operators
+; to the current state.
+
+; The boat can carry up to 2 people at a time, so the valid movements are 1 0,
+; 0 1, 1 1, 2 0, and 0 2. The succ-fn tried all of these movements and returns
+; the combined list of all valid states by calling the next-state since next-state returns
+; nil if the next state is invalid.
+(defun succ-fn (s)
+    (append (next-state s 1 0) (next-state s 0 1) (next-state s 1 1)
+        (next-state s 2 0) (next-state s 0 2))
+)
+
+; ON-PATH checks whether the current state is on the stack of states visited by
+; this depth-first search. It takes two arguments: the current state (s) and the
+; stack of states visited by MC-DFS (states). It returns T if s is a member of
+; states and NIL otherwise.
+(defun on-path (s states)
+    (cond
+        ((null states) nil) ; stack done, not found
+        ((equal (car states) s) t); s matches first item on states stack
+        (t (on-path s (cdr states)))
+    )
+)
+
+; MULT-DFS is a helper function for MC-DFS. It takes two arguments: a stack of
+; states from the initial state to the current state (path), and the legal
+; successor states from the current state (states).
+; MULT-DFS does a depth-first search on each element of states in
+; turn. If any of those searches reaches the final state, MULT-DFS returns the
+; complete path from the initial state to the goal state. Otherwise, it returns
+; NIL. 
+; Note that the path should be ordered as: (S_n ... S_2 S_1 S_0)
+(defun mult-dfs (states path)
+    (if (null states)
+        nil
+        (let ((search (mc-dfs (car states) path)))
+            (cond
+                ((NOT (null search)) search)
+                (t (mult-dfs (cdr states) path))
+            )
+        )
+    )
+)
+
+; MC-DFS does a depth first search from a given state to the goal state. It
+; takes two arguments: a state (S) and the path from the initial state to S
+; (PATH). If S is the initial state in our search, PATH should be NIL. MC-DFS
+; performs a depth-first search starting at the given state. It returns the path
+; from the initial state to the goal state, if any, or NIL otherwise. MC-DFS is
+; responsible for checking if S is already the goal state, as well as for
+; ensuring that the depth-first search does not revisit a node already on the
+; search path.
+(defun mc-dfs (s path)
+    (cond
+        ((final-state s) (cons s path)) ; if final state, done w/ path
+        ((on-path s path) nil) ; s in path, return to prevent repeating/looping
+        (t (mult-dfs (succ-fn s) (cons s path)))
     )
 )
 
