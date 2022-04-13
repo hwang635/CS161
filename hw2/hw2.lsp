@@ -64,3 +64,62 @@
         (t (nil))
     )
 )
+
+; Depth-first solver for River-Boat problem using hw2_skeleton
+
+; FINAL-STATE takes a single argument s, the current state, and returns T if it
+; is the goal state (3 3 NIL) and NIL otherwise. The final-state fx compares S against
+; (3 3 NIL), returns true if they're the same and false otherwise.
+(defun final-state (s)
+    (if (equal s '(3 3 NIL))
+        t
+        nil
+    )
+)
+
+; NEXT-STATE returns the state that results from applying an operator to the
+; current state. It takes three arguments: the current state (s), a number of
+; X's to move (m), and a number of O's to move (c). It returns a
+; list containing the state that results from moving that number of X's
+; and O's from the current side of the river to the other side of the
+; river. If applying this operator results in an invalid state (because there
+; are more O's than X's on either side of the river, or because
+; it would move more X's or O's than are on this side of the
+; river) it returns NIL.
+;
+; NOTE that next-state returns a list containing the successor state (which is
+; itself a list); the return should look something like ((1 1 T)).
+; The next-state fx works by storing the current number of X's and O's on the
+; current side by getting them from the s list, subtracting from the other side to
+; get the number of Xs and Os on the other side, and adding the arguments m, c to
+; get the projected Xs and Os. Then it checks whether there are enough X/Os on the current
+; side to move the desired amounts, if there will be more Os than Xs, and returns nil
+; if the projected move is invalid and the next state inside a list wrapper only if valid.
+(defun next-state (s m c)
+    (let ((currentM (first s)) ; get num X, 0s on this side right now
+        (currentC (second s))
+        (otherM (- 3 (first s))) ; 3 - this side is num X, 0s on other side
+        (otherC (- 3 (second s)))
+        (newHereM (- (first s) m)) ; num X, Os on this side if moved
+        (newHereC (- (second s) c))
+        (otherSide (not (third s))))
+
+        (cond
+            ((< currentM m) nil) ; not enough X or Os to move
+            ((< currentC c) nil)
+            ((AND (< (+ otherM m) (+ otherC c)) (> (+ otherM m) 0)) nil) ; if more Os than Xs after move, invalid
+            ((AND (< newHereM newHereC) (> newHereM 0)) nil)
+            (t (list (list (+ otherM m) (+ otherC c) otherSide)))
+        )   
+    )
+)
+
+; TESTS
+(next-state '(3 3 t) 1 0)
+(next-state '(3 3 t) 0 1)
+(next-state '(3 3 nil) 2 2)
+(next-state '(3 3 t) 2 1)
+(next-state '(2 0 nil) 2 1)
+(next-state '(1 1 nil) 2 2)
+(next-state '(1 0 nil) 2 2)
+(next-state '(1 3 nil) 1 2)
