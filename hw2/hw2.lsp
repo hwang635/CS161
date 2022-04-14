@@ -119,7 +119,7 @@
 ; to the current state.
 
 ; The boat can carry up to 2 people at a time, so the valid movements are 1 0,
-; 0 1, 1 1, 2 0, and 0 2. The succ-fn tried all of these movements and returns
+; 0 1, 1 1, 2 0, and 0 2. The succ-fn tries all of these movements and returns
 ; the combined list of all valid states by calling the next-state since next-state returns
 ; nil if the next state is invalid.
 (defun succ-fn (s)
@@ -147,6 +147,9 @@
 ; complete path from the initial state to the goal state. Otherwise, it returns
 ; NIL. 
 ; Note that the path should be ordered as: (S_n ... S_2 S_1 S_0)
+; The mult-dfs function checks if there are any valid states and stops if there aren't
+; any. Otherwise, if there are valid next states it performs a DFS and recursively calls
+; itself to continue searching the rest of the states.
 (defun mult-dfs (states path)
     (if (null states)
         nil
@@ -167,6 +170,10 @@
 ; responsible for checking if S is already the goal state, as well as for
 ; ensuring that the depth-first search does not revisit a node already on the
 ; search path.
+; The mc-dfs function works by checking if we've reached the final state s, upon which
+; we return the path. If we are still looking for the final state, the fx keeps
+; searching through the path for the next possible states and calls the mult-dfs
+; helper fx.
 (defun mc-dfs (s path)
     (cond
         ((final-state s) (cons s path)) ; if final state, done w/ path
@@ -176,11 +183,52 @@
 )
 
 ; TESTS
-(next-state '(3 3 t) 1 0)
-(next-state '(3 3 t) 0 1)
-(next-state '(3 3 nil) 2 2)
-(next-state '(3 3 t) 2 1)
-(next-state '(2 0 nil) 2 1)
-(next-state '(1 1 nil) 2 2)
-(next-state '(1 0 nil) 2 2)
-(next-state '(1 3 nil) 1 2)
+;(bfs '((A (B)) C (D)))
+;(bfs '((w x) (y z)))
+;(bfs '((w (a b) x (c (d))) (y z)))
+;(bfs '())
+;(bfs '(A))
+;(bfs '(A (B C) (D) (E (F G))))
+
+;(dfs '((A (B)) C (D)))
+;(dfs '((w x) (y z)))
+;(dfs '((w (a b) x (c (d))) (y z)))
+;(dfs '())
+;(dfs '(A))
+;(dfs '(A (B C) (D) (E (F G))))
+
+;(dfid '((A (B)) C (D)) 3) 
+;(dfid '((A (B)) C (D)) 0) 
+;(dfid '() 3)
+;(dfid '((w (a b) x (c (d))) (y z)) 4)
+;(dfid '((w x) (y z)) 2)
+;(dfid '(A (B C) (D) (E (F G))) 3)
+
+;(final-state '(3 3 nil))
+;(final-state '(3 3 t))
+;(final-state '(0 2 t))
+
+;(next-state '(3 3 t) 1 0)
+;(next-state '(3 3 t) 0 1)
+;(next-state '(3 3 nil) 2 2)
+;(next-state '(3 3 t) 2 1)
+;(next-state '(2 0 nil) 2 1)
+;(next-state '(1 1 nil) 2 2)
+;(next-state '(1 0 nil) 2 2)
+;(next-state '(1 3 nil) 1 2)
+
+;(succ-fn '(3 3 t))
+;(succ-fn '(1 1 t))
+;(succ-fn '(2 1 nil))
+;(succ-fn '(0 0 nil))
+;(succ-fn '(0 3 nil))
+
+;(on-path '(3 1 T) '((3 1 T) (3 2 T)))
+;(on-path '(3 1 T) '((3 1 nil) (3 2 T) (1 3 T)))
+;(on-path '(2 2 T) '())
+;(on-path '(3 1 nil) '((2 1 nil) (2 2 T) (3 2 T)))
+;(on-path '(3 2 nil) '((2 1 nil) (2 2 T) (3 2 nil)))
+
+;(mc-dfs '(3 3 T) nil)
+;(mc-dfs '(2 2 nil) '((3 1 T) (0 3 NIL) (3 2 T)
+; (1 1 NIL) (3 3 T)))
