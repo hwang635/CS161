@@ -178,8 +178,18 @@
 ; this function as the goal testing function, A* will never
 ; terminate until the whole search space is exhausted.
 ;
+; The goal test is when every movable entity (boxes, keeper) is in a goal pos.
+; So there can't be any misplaced boxes (box) or keeper (keeper) not on the goal,
+; only box-star or keeper-star (on the goal). This fx checks if state s is the
+; goal state by verifying that there aren't any boxes/keeper not on a goal.
 (defun goal-test (s)
-  nil
+	(cond
+		((null s) t) ; done checking, no box/keeper found
+		((atom s) (if (or (isBox s) (isKeeper s)) 
+						NIL 
+						t)) ; single elem, false if box/keeper
+		(t (and (goal-test (car s)) (goal-test (cdr s)))) ; check current elem + rest of state
+	)
   );end defun
 
 ; EXERCISE: Modify this function to return the list of 
@@ -266,7 +276,7 @@
  (1 0 3 0 1)
  (1 0 0 0 1)
  (1 1 1 1 1)
- )) 
+ ))  
 
 ;(6)
 (setq p1 '((1 1 1 1 1 1)
@@ -411,6 +421,22 @@
 	    (0 0 0 0 1 0 1 4 0 1)
 	    (0 0 0 0 1 4 4 4 0 1)
 	    (0 0 0 0 1 1 1 1 1 1)))
+
+(setq goalstate1'((1 1 1 1 1)
+ (1 4 0 0 1)
+ (1 0 1 0 1)
+ (1 0 1 0 1)
+ (1 0 0 0 1)
+ (1 5 1 1 1)
+ ))
+
+  (setq goalstate2'((1 1 1 1 1)
+ (1 4 0 0 1)
+ (1 0 1 0 1)
+ (1 0 1 5 1)
+ (1 7 6 0 1)
+ (1 1 1 1 1)
+ )) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; MORE GIVEN HELPER FXS
 
