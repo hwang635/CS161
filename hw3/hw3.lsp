@@ -130,7 +130,7 @@
 ;
 ; getKeeperPosition (s firstRow)
 ; Returns a list indicating the position of the keeper (c r).
-; 
+; NOTE: CHANGED TO BE (r c)
 ; Assumes that the keeper is in row >= firstRow.
 ; The top row is the zeroth row.
 ; The first (left) column is the zeroth column.
@@ -140,7 +140,8 @@
 	(t (let ((x (getKeeperColumn (car s) 0)))
 	     (if x
 		 ;keeper is in this row
-		 (list x row)
+		 ;(list x row)
+		 (list row x) ; CHANGED TO BE (r c) instead of (c r)
 		 ;otherwise move on
 		 (getKeeperPosition (cdr s) (+ row 1))
 		 );end if
@@ -243,6 +244,33 @@
 		(t (cons (car S) (set-square (cdr S) (- r 1) c v)))
 	)
 )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;; try-move and helpers
+
+; get-next-loc takes in row num r, col num c, lengths rowLength, colLength, and
+; direction to move in D and returns new position (r', c'). If the (r, c) is
+; out of bounds of game state, it returns (-1, -1) but doesn't check (r', c').
+(defun get-next-loc (r c rowLength colLength D)
+	(cond
+		((or (< r 0) (< c 0)) (list -1 -1)) ; out of bounds, return list (-1 -1)
+		((or (>= r rowLength) (>= c colLength)) (list -1 -1))
+		((equal D 'up) (list (- r 1) c))
+		((equal D 'down) (list (+ r 1) c))
+		((equal D 'left) (list r (- c 1)))
+		((equal D 'right) (list r (+ c 1)))
+		(t (list -1 -1))
+	)
+)
+
+; try-box tries to have the keeper move a box
+
+; try-move takes in state S, move direction D and returns the state that results
+; from moving keeper in state S in direction D or NIL if the move is invalid (ex:
+; wall in that direction). 
+(defun try-move (S D)
+	NIL
+)
+
 
 ; EXERCISE: Modify this function to return the list of 
 ; sucessor states of s.
