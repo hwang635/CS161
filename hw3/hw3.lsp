@@ -254,23 +254,96 @@
 	(cond
 		((or (< r 0) (< c 0)) (list -1 -1)) ; out of bounds, return list (-1 -1)
 		((or (>= r rowLength) (>= c colLength)) (list -1 -1))
-		((equal D 'up) (list (- r 1) c))
-		((equal D 'down) (list (+ r 1) c))
-		((equal D 'left) (list r (- c 1)))
-		((equal D 'right) (list r (+ c 1)))
+		((equal D 'UP) (list (- r 1) c))
+		((equal D 'DOWN) (list (+ r 1) c))
+		((equal D 'LEFT) (list r (- c 1)))
+		((equal D 'RIGHT) (list r (+ c 1)))
 		(t (list -1 -1))
 	)
 )
 
-; try-box tries to have the keeper move a box
+; handle-walk takes in current state S, new state newS, keeper coordinates
+; (keeperRow, keeperCol) and handles the keeper just moving w/o pushing box 
+; by resetting its former spot. it returns changed state S' w/ the reset spot.
+(defun handle-walk (S newS keeperRow keeperCol)
+	(let ((keeperType (get-square S keeperRow keeperCol)))
+		; if current is just keeper, directly move + put blank at former spot
+		; if currently keeper star (on goal), replace former spot w/ goal
+		(if (isKeeper keeperType)
+			(set-square newS keeperRow keeperCol blank)
+			(set-square newS keeperRow keeperCol star)
+		)
+	)
+)
+
+; push-box tries to have the keeper push the box by checking if the location next
+; to the box can be moved to (not wall), moving the box and setting the value
+; to box or box star depending on if there's a goal there, moving the keeper
+; where the box formely was, and clearing the former keeper location the same
+; as in handle-walk.
+; push-box takes in current state S, keeper coordinates (keeperRow, keeperCol),
+; coordinates where the box is and keeper will be (nextCoordX, nextCoordY),
+; whether the box is a box or box on a goal boxType, and the location the box
+; will be pushed to nextBoxLoc. It returns a new state S' if the box is pushed
+; or nil if there's a wall so it can't be pushed.
+(defun push-box (S keeperRow keeperCol nextCoordX nextCoordY boxType nextBoxLoc)
+	; check whether the spot the box will be moved to is valid (not wall or out of bounds)
+	(let ((nextBoxLocContains (get-square S (first nextBoxLoc) (second nextBoxLoc)))
+			(newKeeperType (if (isBox boxType) keeper keeperstar))) ; check if keeper is on goal after move
+		(cond
+			((isWall nextBoxLocContains) nil) ; wall, can't be moved there
+			((or (isBlank nextBoxLocContains) (isStar nextBoxLocContains)) ; blank or wall, can be walk + push
+				(let* ((movedKeeperState (set-square S nextCoordX nextCoordY newKeeperType))
+						(clearedAfterMove (handle-walk S movedKeeperState keeperRow keeperCol))
+						(newBoxType (if (isBlank nextBoxLocContains) box boxstar))) ; check if box will be on goal
+					(set-square clearedAfterMove (first nextBoxLoc) (second nextBoxLoc) newBoxType)
+				)
+			)
+			(t nil)
+		)
+	)
+)
 
 ; try-move takes in state S, move direction D and returns the state that results
 ; from moving keeper in state S in direction D or NIL if the move is invalid (ex:
-; wall in that direction). 
+; wall in that direction). The try-move tries to move in the given direction by
+; checking what the next position would be and calling the helper function for just
+; moving to a blank/goal spot or moving to a box and trying to push it.
 (defun try-move (S D)
-	NIL
-)
+	(let* ((keeperLoc (getKeeperPosition S 0))
+			(keeperRow (first keeperLoc))
+			(keeperCol (second keeperLoc))
+			(rowLen (length S))
+			(colLen (length (car S)))
+			(nextCoord (get-next-loc keeperRow keeperCol rowLen colLen D))
+			(nextCoordX (first nextCoord))
+			(nextCoordY (second nextCoord))
+			(nextCoordContains (get-square S nextCoordX nextCoordY)))
 
+			(cond
+				((isWall nextCoordContains) nil) ; if wall, can't move there
+				((isBlank nextCoordContains) ; nothing there, just walk
+					; move keeper to where the blank is, set keeper there
+					(let ((movedState (set-square S nextCoordX nextCoordY keeper)))
+							(handle-walk S movedState keeperRow keeperCol)
+					)
+				)
+				((isStar nextCoordContains) ; goal, just walk
+					; move keeper to where the goal is, set keeperstar there
+					(let ((movedState (set-square S nextCoordX nextCoordY keeperstar)))
+							(handle-walk S movedState keeperRow keeperCol)
+					)
+				)
+				; if box/box on goal, try pushing box in dir D
+				((or (isBox nextCoordContains) (isBoxStar nextCoordContains))
+					(let ((nextBoxLoc (get-next-loc nextCoordX nextCoordY rowLen colLen D)))
+						(push-box S keeperRow keeperCol nextCoordX nextCoordY nextCoordContains nextBoxLoc)
+					)
+				)
+				(t nil)
+			)
+	)
+)
 
 ; EXERCISE: Modify this function to return the list of 
 ; sucessor states of s.
@@ -290,15 +363,17 @@
 ; You will need to define the function try-move and decide how to represent UP,DOWN,LEFT,RIGHT.
 ; Any NIL result returned from try-move can be removed by cleanUpList.
 ; 
-;
+; next-states call helper function try-move for each possible direction up, down,
+; left, and right and combines the results into a list. Then cleanUpList removes any
+; invalid NIL result and returns the list.
 (defun next-states (s)
   (let* ((pos (getKeeperPosition s 0))
-	 (x (car pos))
-	 (y (cadr pos))
-	 ;x and y are now the coordinate of the keeper in s.
-	 (result nil)
-	 )
-    (cleanUpList result);end
+	(x (car pos))
+ 	(y (cadr pos))
+	;x and y are now the coordinate of the keeper in s.
+	(result (list (try-move s 'UP) (try-move s 'DOWN) (try-move s 'LEFT) (try-move s 'RIGHT))))
+    
+	(cleanUpList result);end
    );end let
   );
 
