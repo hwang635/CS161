@@ -192,6 +192,58 @@
 	)
   );end defun
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; NEXT-STATE + HELPER FXS
+
+; get-square takes in state S, row num r, col num c and returns integer content
+; of S at square (r, c). If the square is outside scope, return wall (1). The fx
+; checks if the passed in r, c are within the limits of S by checking S's length
+; and nested length, then gets the row/element at (r, c) assuming the top left
+; corner is (0, 0).
+(defun get-square (S r c)
+	(cond
+		((< r 0) wall) ; under bounds, return wall
+		((< c 0) wall)
+		((>= r (length S)) wall) ; over bounds, return wall
+		((>= c (length (car S))) wall)
+		; get (r, c) from row = sublist r, nthcdr does n cdr's then car gets the first elem
+		(t (let ((row (car (nthcdr r S))))
+			(car (nthcdr c row)))
+		)
+	)
+)
+
+; set-square takes in state S, row num r, col num c, and square content int v.
+; Then it returns new state S' where (r, c) has been set to v without modifying
+; parameter S. The set-square fx recurses and each time removes a row and 
+; decrements r to reach the desired row, then calls the helper function 
+; set-square col to actually set the value. set-square-col takes in column num c,
+; the current row, the value v and returns the row w/ the value v set. The 
+; set-square-col fx works by calling itself and decrementing c and cdr row each
+; time to count until the correct position, then it inserts value v at the desired
+; position and passes it upward to combine with the start of the row.
+(defun set-square-col (c currentRow v)
+	(cond
+		((< c 0) S) ; out of bounds, return row
+		((>= c (length currentRow)) S)
+		((= c 0) (cons v (cdr currentRow))) ; at correct col pos, set square to v
+		; decrement col, cdr currentRow until @ pos
+		(t (cons (car currentRow) (set-square-col (- c 1) (cdr currentRow) v)))
+	)
+)
+
+(defun set-square (S r c v)
+	(cond
+		((< r 0) S) ; out of bounds/bad input, return S
+		((< c 0) S)
+		((>= r (length S)) S)
+		((>= c (length (car S))) S)
+		; when at correct row, call helper w/ just this row + combine w/ rest of S
+		((= r 0) (cons (set-square-col c (car S) v) (cdr S)))
+		; decrement r counter when not at correct row, remove start row each time
+		(t (cons (car S) (set-square (cdr S) (- r 1) c v)))
+	)
+)
+
 ; EXERCISE: Modify this function to return the list of 
 ; sucessor states of s.
 ;
@@ -287,7 +339,7 @@
 	   (1 0 4 0 4 1)
 	   (1 1 1 1 1 1)))
 
-;(15)
+;(15) 7 x 6
 (setq p2 '((1 1 1 1 1 1 1)
 	   (1 0 0 0 0 0 1) 
 	   (1 0 0 0 0 0 1) 
