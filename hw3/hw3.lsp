@@ -400,6 +400,7 @@
 	)
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; h2 and helper fxs
 ; EXERCISE: Modify this h2 function to compute an
 ; admissible heuristic value of s. 
 ; 
@@ -409,7 +410,44 @@
 ; running time of a function call.
 ;
 (defun h2 (s)
-  )
+
+)
+
+; combineCoords takes in row r, columns colList and combines them into
+; pairs of coordinates (r, c)
+(defun combineCoords (r colList)
+	(cond
+		((null colList) nil)
+		(t (append (list (list r (car colList))) ; combine first num, then do rest of list
+						(combineCoords r (cdr colList))))
+	)
+)
+; findItems looks through state S, starting at row r to find the coordinates of 
+; all items of given itemType
+(defun findItems (S row itemType)
+	(cond
+		((null s) nil)
+		(t (let ((foundCols (findItemsCol (car s) 0 itemType)))
+				(if foundCols
+						; if found, combine to get (r, c) coords for this row + continue
+						(append (combineCoords row foundCols) (findItems (cdr S) (+ row 1) itemType))
+						(findItems (cdr S) (+ row 1) itemType)
+				)
+		))	
+	)
+)
+
+; findItemsCol looks through the given row starting at col c to find all items of given type
+; locations.
+(defun findItemsCol (row c itemType)
+	(cond
+		((null row) nil)
+		; if matching item found, append col index + recurse
+		((equal itemType (car row)) (cons c (findItemsCol (cdr row) (+ c 1) itemType)))
+		; no box found, look through rest
+		(t (findItemsCol (cdr row) (+ c 1) itemType))
+	)
+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
