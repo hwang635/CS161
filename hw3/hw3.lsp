@@ -395,7 +395,8 @@
 (defun h1 (s)
 	(cond
 		((null s) 0) ; done checking or nothing
-		(t (+ (count box (car s)) (h1 (cdr s)))) ; otherwise get # boxes in start row, recursively call for rest of state 
+		; otherwise get # boxes in start row, recursively call for rest of state 
+		(t (+ (count box (car s)) (h1 (cdr s)))) 
 	)
 )
 
@@ -469,14 +470,14 @@
 ; findDistPerBox takes in a list of box locations (r, c) and goal locations (r, c).
 ; It calls a helper function to find the shortest distance from a box to a goal
 ; and returns the sum of all of the distances for every box.
-(defun findDistPerbox1 (boxList goalList)
+(defun findDistPerBoxH (boxList goalList)
 	(cond
 		((null boxList) 0)
 		((null goalList) 0)
 		; just 1 box, find its distance
 		((atom boxList) (findMinDistToGoal boxList goalList))
 		; list of boxes, find distance for head of list + sum w/ rest of list
-		(t (+ (findMinDistToGoal (car boxList) goalList) (findDistPerBox1 (cdr boxList) goalList)))
+		(t (+ (findMinDistToGoal (car boxList) goalList) (findDistPerBoxH (cdr boxList) goalList)))
 	)
 )
 
@@ -488,10 +489,18 @@
 ; The Lisp 'time' function can be used to measure the 
 ; running time of a function call.
 ;
+; h2 calls helper functions to find the minimum distance from each
+; box to some goal in state S. It is admissible since it uses the
+; Manhattan distance (distance between 2 coordinates, the shortest path
+; around blocks/tiles on a grid) which is useful for our problem, which
+; involved square coordinates on a grid. It never overestimates the
+; distance needed, since each box at least needs to travel to its closest
+; goal in order for the goal state to be reached.
+; https://machinelearningmastery.com/distance-measures-for-machine-learning/
 (defun h2 (s)
 	(let ((boxList (findItems s 0 box))
 			(goalList (findItems s 0 star)))
-			(findDistPerBox boxList goalList)
+			(findDistPerBoxH boxList goalList)
 	)
 )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
