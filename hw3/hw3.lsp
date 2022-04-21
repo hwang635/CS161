@@ -368,9 +368,9 @@
 ; invalid NIL result and returns the list.
 (defun next-states (s)
   (let* ((pos (getKeeperPosition s 0))
-	(x (car pos))
- 	(y (cadr pos))
-	;x and y are now the coordinate of the keeper in s.
+	;(x (car pos))
+ 	;(y (cadr pos))
+	;x and y are now the coordinate of the keeper in s. UNUSED
 	(result (list (try-move s 'UP) (try-move s 'DOWN) (try-move s 'LEFT) (try-move s 'RIGHT))))
     
 	(cleanUpList result);end
@@ -394,34 +394,12 @@
 ; https://jtra.cz/stuff/lisp/sclr/count.html
 (defun h1 (s)
 	(cond
-		((null s) 0) ; done checking
-		((atom s) (if (isBox s) 1 0)) ; if only 1 elem check if box
+		((null s) 0) ; done checking or nothing
 		(t (+ (count box (car s)) (h1 (cdr s)))) ; otherwise get # boxes in start row, recursively call for rest of state 
 	)
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; h2 and helper fxs
-; EXERCISE: Modify this h2 function to compute an
-; admissible heuristic value of s. 
-; 
-; This function will be entered in the competition.
-; Objective: make A* solve problems as fast as possible.
-; The Lisp 'time' function can be used to measure the 
-; running time of a function call.
-;
-(defun h2 (s)
-
-)
-
-; combineCoords takes in row r, columns colList and combines them into
-; pairs of coordinates (r, c)
-(defun combineCoords (r colList)
-	(cond
-		((null colList) nil)
-		(t (append (list (list r (car colList))) ; combine first num, then do rest of list
-						(combineCoords r (cdr colList))))
-	)
-)
 ; findItems looks through state S, starting at row r to find the coordinates of 
 ; all items of given itemType
 (defun findItems (S row itemType)
@@ -437,6 +415,16 @@
 	)
 )
 
+; combineCoords takes in row r, columns colList and combines them into
+; pairs of coordinates (r, c)
+(defun combineCoords (r colList)
+	(cond
+		((null colList) nil)
+		(t (append (list (list r (car colList))) ; combine first num, then do rest of list
+						(combineCoords r (cdr colList))))
+	)
+)
+
 ; findItemsCol looks through the given row starting at col c to find all items of given type
 ; locations.
 (defun findItemsCol (row c itemType)
@@ -449,6 +437,63 @@
 	)
 )
 
+; findMinDistToGoal takes in the location of a boxCoord (r, c) and a list of goal locs
+; Then it finds the manhattan dist from the box to each of the goals and returns
+; the shortest distance to a goal found
+(defun findMinDistToGoal (boxCoord goalList)
+	(cond
+		((null boxCoord) nil)
+		((null goalList) nil)
+		(t (if (= (length goalList) 1)
+				(calcManhattanDist (first boxCoord) (second boxCoord) (car goalList))
+				(min (calcManhattanDist (first boxCoord) (second boxCoord) (car goalList))
+						(findMinDistToGoal boxCoord (cdr goalList)))
+		))
+	)
+)
+
+; calcManhattanDist calculates the manhattan distance (distance btw 2 pts measured
+; along axes at right angles) using the absolute value distance between coords
+; p1 (r1, c1) and p2 (r2, c2), to be used in the heuristic h2.
+; https://xlinux.nist.gov/dads/HTML/manhattanDistance.html
+(defun calcManhattanDist (r1 c1 p2)
+	(cond
+		((null p2) 0)
+		(t (let ((x2 (car p2))
+				(y2 (second p2)))
+			(+ (abs (- r1 x2)) (abs (- c1 y2)))
+		))
+	)
+)
+
+; findDistPerBox takes in a list of box locations (r, c) and goal locations (r, c).
+; It calls a helper function to find the shortest distance from a box to a goal
+; and returns the sum of all of the distances for every box.
+(defun findDistPerbox1 (boxList goalList)
+	(cond
+		((null boxList) 0)
+		((null goalList) 0)
+		; just 1 box, find its distance
+		((atom boxList) (findMinDistToGoal boxList goalList))
+		; list of boxes, find distance for head of list + sum w/ rest of list
+		(t (+ (findMinDistToGoal (car boxList) goalList) (findDistPerBox1 (cdr boxList) goalList)))
+	)
+)
+
+; EXERCISE: Modify this h2 function to compute an
+; admissible heuristic value of s. 
+; 
+; This function will be entered in the competition.
+; Objective: make A* solve problems as fast as possible.
+; The Lisp 'time' function can be used to measure the 
+; running time of a function call.
+;
+(defun h2 (s)
+	(let ((boxList (findItems s 0 box))
+			(goalList (findItems s 0 star)))
+			(findDistPerBox boxList goalList)
+	)
+)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 #|
