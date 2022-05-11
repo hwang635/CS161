@@ -1,0 +1,91 @@
+CS161 HW6
+05/11/22
+
+1. 
+    a) theta = {x/A, y/A, z/B}
+    b) Unifier doesn't exist
+    c) theta = {x/B, y/A}
+    d) theta = {x/John, y/John}
+    e) Unifier doesn't exist
+
+2.
+    a) John likes all kinds of food: (A x) Food (x) => (likes(John, x))
+    Apples are food: Food(apples)
+    Chicken is food: Food(chicken)
+    Anything someone eats and isn't killed by is food:
+    (A x) (E y) (Eats(y, x) & ~Kills(x, y)) => Food(x)
+    If you are killed by something, you are not alive:
+    (A y) (E x) (Kills (x, y)) => ~Alive(y)
+    Bill eats peanuts and is still alive: Eats(Bill, peanuts) & Alive(Bill)
+    Sue eats everything Bill eats: (A x) (Eats(Bill, x)) => Eats(Sue, x)
+
+    b) Steps to turn to CNF: elim => and <=>, move negation inwards, standardise
+    vars, skolemise, remove for any symbol (!A is E, !E is A)
+    1. ~Food(x) | likes(John, x)
+    2. Food(apples)
+    3. Food(chicken)
+    4. ~Eats(p, f) | Kills(f, p) | Food(f)
+    5. ~Kills(w, y) | ~Alive(y)
+    6. Eats(Bill, peanuts)
+    7. Alive(Bill)
+    8. ~Eats(Bill, z) | Eats(Sue, z)
+
+    c) Use resolution to prove alpha = likes(John, peanuts): prove KB delta and !alpha is unsat
+    9. !alpha is ~likes(John, peanuts)
+    10. w/ theta = {x/peanuts), ~Food(peanuts) (1 + 9)
+    11. w/ theta = {f/peanuts}, ~Eats(p, peanuts) | Kills(peanuts, p) (10 + 4)
+    12. w/ theta = {w/peanuts}, ~Eats(p, peanuts) | ~Alive(p)
+    13. w/ theta = p/Bill, ~Alive(Bill)
+    14. Contradiction w/ empty clause,  7 + 13
+
+    We've found that if Bill eats peanuts the peanuts will kill him, which
+    is a contradiction since Bill eats peanuts and is still alive. This proves 
+    that John likes peanuts.
+
+    d) What does Sue eat? Eats(Sue, x)
+    Eats(Bill, peanuts)
+    ~Eats(Bill, z) | Eats(Sue, z)
+    theta = {z/peanuts}
+    Eats(Sue, z) --> Eats(Sue, peanuts)
+
+    Sue eats everything that Bill eats and Bill eats peanuts. So Sue eats
+    peanuts.
+
+    e) Remove 6, 7, replace w/
+    If you don't eat you die: Eat(a, b) | Die(a)
+    If you die you are not alive: ~Die(c) | ~Alive(c)
+    Bill is alive: Alive(Bill)
+    1. ~Food(x) | likes(John, x)
+    2. Food(apples)
+    3. Food(chicken)
+    4. ~Eats(p, f) | Kills(f, p) | Food(f)
+    5. ~Kills(w, y) | ~Alive(y)
+    6. ~Eats(Bill, z) | Eats(Sue, z)
+    7. Eats(a, b) | Die(a)
+    8. ~Die(c) | ~Alive(c)
+    9. Alive(Bill)
+
+    10. theta = c/Bill, ~Die(Bill) (8 + 8)
+    11. theta = a/Bill, Eats( Bill, b)
+    12. theta = z/b, Eats(Sue, b)  (6, 11)
+
+    We can't resolve any further so we can't determine what Sue eats.
+
+3.
+    1) RSat outputs that graph1 is unsatisfiable w/ 3 colours.
+    2) RSat outputs that graph1 is satisfiable w/ 4 colours.
+    3) The SAT instance answers tells us that graph 1 needs a minimum
+    of 4 colours to be satisfiable. Since we know 4 colours is satisfiable,
+    we can colour in graph 1 with an example set of {red, blue, green, black}.
+    5 - red
+    1 - blue
+    6 - green
+    4 - black
+    7 - red
+    3 - blue
+    2 - green
+    4) RSAT outputs that graph2 is unsatisfiable for up to 7 colours,
+    and satisfiable for a minimum of 8 colours.
+
+
+
